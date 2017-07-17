@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -11,12 +12,33 @@ namespace BarcodeFunctionApp
     {
         [FunctionName("DownloadBarcodeByProductId")]
 
-        public static HttpResponseMessage Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = "HttpTriggerCSharp/name/{name}")]HttpRequestMessage req, string name, TraceWriter log)
+        public static HttpResponseMessage Run(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "DownloadBarcodeByProductId/{id}")]HttpRequestMessage req, string id, TraceWriter log)
         {
             log.Info("C# HTTP trigger function processed a request.");
 
-            // Fetching the name from the path parameter in the request URL
-            return req.CreateResponse(HttpStatusCode.OK, "Hello " + name);
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return req.CreateErrorResponse(HttpStatusCode.BadRequest, "Id can not be empty or null");
+            }
+            Guid guid;
+            if (!Guid.TryParse(id, out guid))
+            {
+                return req.CreateErrorResponse(HttpStatusCode.BadRequest, "Id must be a GUID or UUID");
+            }
+
+            BusinessDbContext businessDbContext = new BusinessDbContext();
+            var model = businessDbContext.ProductDetails.Find(id);
+            HttpResponseMessage response;
+            if (model == null)
+            {
+                response = new HttpResponseMessage(HttpStatusCode.NotFound);
+                return response;
+            }
+            string barCode = model.BarCode;
+            string text = $"{model.Name} \n MRP: {model.SalePrice} Tk";
+            response = BarcodeImageHandler.GetBarcodeImage(barCode, text);
+            return response;
         }
     }
 }

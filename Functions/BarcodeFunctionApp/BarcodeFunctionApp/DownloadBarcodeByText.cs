@@ -11,12 +11,22 @@ namespace BarcodeFunctionApp
     {
         [FunctionName("DownloadBarcodeByText")]
 
-        public static HttpResponseMessage Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = "HttpTriggerCSharp/name/{name}")]HttpRequestMessage req, string name, TraceWriter log)
+        public static HttpResponseMessage Run(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "DownloadBarcodeByText/{barcode}/{text}")]HttpRequestMessage req, string barcode, string text, TraceWriter log)
         {
             log.Info("C# HTTP trigger function processed a request.");
 
-            // Fetching the name from the path parameter in the request URL
-            return req.CreateResponse(HttpStatusCode.OK, "Hello " + name);
+            if (string.IsNullOrWhiteSpace(barcode))
+            {
+                return req.CreateErrorResponse(HttpStatusCode.BadRequest, "Barcode can not be empty or null");
+            }
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return req.CreateErrorResponse(HttpStatusCode.BadRequest, "Text can not be empty or null");
+            }
+            
+            var response = BarcodeImageHandler.GetBarcodeImage(barcode, text);
+            return response;
         }
     }
 }
