@@ -1,0 +1,8 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/Functions/BarcodeFunctionApp/BarcodeFunctionApp/bin/Debug/net461
+/Functions/BarcodeFunctionApp/BarcodeFunctionApp/obj
+*.suo
+/Functions/BarcodeFunctionApp/.vs/BarcodeFunctionApp/v15/sqlite3
